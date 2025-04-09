@@ -15,6 +15,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     // For agreements: uniqueness by document type, student, and company.
     Optional<Document> findByDocumentTypeAndStudentAndCompany(DocumentType documentType, Student student, com.example.demo.entity.Company company);
+    Optional<Document> findByIdAndDocumentType(Long id, DocumentType documentType);
 
     // For the fourth controller: find all documents optionally filtered by type
     List<Document> findByDocumentType(DocumentType documentType);
