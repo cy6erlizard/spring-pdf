@@ -20,28 +20,35 @@ public class PdfViewController {
     @GetMapping("/view")
     public ResponseEntity<byte[]> viewPdf(@RequestParam String path) {
         try {
-            // Create a Path object from the provided string path.
-            Path pdfPath = Paths.get(path);
+            // Normalize the provided path by replacing backslashes with forward slashes.
+            // This helps in converting the Windows-style path into a consistent format.
+            String normalizedPath = path.replace("\\", "/");
+            Path pdfPath = Paths.get(normalizedPath);
 
-            // Read PDF file into byte array.
+            // Log the absolute path for debugging purposes.
+            System.out.println("Attempting to load file from: " + pdfPath.toAbsolutePath());
+
+            // Check if the file exists. If not, log an error and return HTTP 404.
+            if (!Files.exists(pdfPath)) {
+                System.err.println("File not found: " + pdfPath.toAbsolutePath());
+                return ResponseEntity.notFound().build();
+            }
+
+            // Read the PDF file into a byte array.
             byte[] pdfBytes = Files.readAllBytes(pdfPath);
 
-            // Set headers so that the browser treats the response as a PDF.
+            // Prepare HTTP headers with the correct content type and disposition.
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            // Optionally, to show the PDF in the browser:
             headers.setContentDispositionFormData("inline", pdfPath.getFileName().toString());
-            // If you prefer to force download replace 'inline' with 'attachment'
-            // headers.setContentDispositionFormData("attachment", pdfPath.getFileName().toString());
 
-            return ResponseEntity
-                    .ok()
+            return ResponseEntity.ok()
                     .headers(headers)
                     .body(pdfBytes);
         } catch (IOException e) {
-            // Log the exception and return a 404 (Not Found) error response.
             e.printStackTrace();
             return ResponseEntity.notFound().build();
         }
     }
+
 }
